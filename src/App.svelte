@@ -18,6 +18,7 @@
   let location = '';
   let phone = '';
   let email = '';
+  let experienceLevel = '';
 
   let career: CareerEntry[] = [
     { companyName: '', date: '', location: '', bulletCount: 3 },
@@ -45,6 +46,159 @@
   function removeEducation(i: number) {
     education = education.filter((_, idx) => idx !== i);
   }
+
+  const PROMPT_STATIC_AFTER_PROFILE = `
+========================================
+JOB DESCRIPTION HANDLING RULES
+========================================
+1. If the job requires any security clearance, DO NOT generate a resume.
+2. If the job requires on-site, hybrid work arrangement and there is no possibility to work remotely in candidate's location, DO NOT generate a resume.
+
+========================================
+OUTPUT FORMAT (STRICT)
+========================================
+Return ONE JSON object with the following structure:
+{
+  "header": {
+    "name": "",
+    "role": "",
+    "address": "",
+    "phone": "",
+    "email": ""
+  },
+  "summary": "",
+  "skills": [
+    { "category": ["Skill1", "Skill2", "..."] }
+  ],
+  "experience": [
+    {
+      "company": "",
+      "title": "",
+      "duration": "",
+      "location": "",
+      "sentences": [
+        "Sentence 1",
+        "Sentence 2"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "institution": "",
+      "degree": "",
+      "date": "",
+      "location": ""
+    }
+  ]
+}
+
+========================================
+CONTENT RULES
+========================================
+ROLE
+- 2-4 words long
+- Appropriate for the job description
+- Simple, Concise, and Common in the industry
+JOB TITLE RULES:
+- 2-4 words long
+- Appropriate for the job description
+- Simple, Concise, and Common in the industry
+- Job titles should be familiar to the career flow
+SUMMARY
+- 3–4 sentences
+- Professional, ATS-optimized, Confident and Concise
+- Aligned directly to the job description
+SKILLS
+- 30–35 total skills
+- Categorized
+- Must include technologies from the job description
+- Only include technologies released during the work period
+EXPERIENCE – SENTENCE RULES (VERY IMPORTANT)
+- Third-person only without the name, and he or she
+- Each sentence must be 150–220 characters and contain detailed, technically rich descriptions of your role, specific contributions, and technologies used.
+- Each sentence must end with a period.
+- Each experience must reference company industry relevance.
+- No bullet symbols.
+- No sentence may be vague or generic.
+- No special characters except "/" or "-" when required (examples: CI/CD, T-SQL).
+- All technologies must be included only after their first version. (or alpha release date)
+SENTENCE COUNT PER COMPANY
+{{SENTENCE_COUNT_PER_COMPANY}}
+
+========================================
+FORMATTING RULES
+========================================
+- JSON ONLY
+- ONE code block ONLY
+- No markdown outside JSON
+- No comments
+- No trailing commas
+- Valid JSON syntax
+- ATS-safe language only
+
+========================================
+FINAL VALIDATION
+========================================
+Before responding, verify:
+- All job description technologies are included
+- Sentence length requirements are met
+- Sentence count requirements are met
+- Job titles are aligned to the role
+- Output is valid JSON
+========================================
+JOB DESCRIPTION
+========================================
+
+`;
+
+  $: candidateProfileBlock = (() => {
+    const lines: string[] = [
+      'Name: ' + (fullName.trim() || '(not set)'),
+      'Address: ' + (location.trim() || '(not set)'),
+      'Phone: ' + (phone.trim() || '(not set)'),
+      'Email: ' + (email.trim() || '(not set)'),
+    ];
+    if (education.length > 0 && (education[0].institution || education[0].degreeMajor || education[0].date)) {
+      const ed = education
+        .filter((e) => e.institution || e.degreeMajor || e.date)
+        .map((e) => [e.degreeMajor, e.institution, e.date].filter(Boolean).join(', '))
+        .join('; ');
+      if (ed) lines.push('Education: ' + ed);
+    }
+    if (experienceLevel.trim()) {
+      lines.push('Experience Level: ' + experienceLevel.trim());
+    }
+    if (career.length > 0 && career.some((c) => c.companyName || c.date)) {
+      lines.push(
+        'Career History:',
+        ...career
+          .filter((c) => c.companyName || c.date)
+          .map((c) => `${c.companyName}: ${c.date}`.trim())
+      );
+    }
+    return lines.join('\n');
+  })();
+
+  $: sentenceCountPerCompany = career
+    .filter((c) => c.companyName.trim())
+    .map((c) => `- ${c.companyName}: ${c.bulletCount} sentences`)
+    .join('\n') || '- (add career entries above)';
+
+  $: aiPromptText =
+    `You are an expert resume writer.
+Your task is to generate a resume based on the candidate's profile and the job description.
+Your output MUST be exactly ONE valid JSON object inside a single code block.
+Do NOT include explanations, comments, markdown, headers, or text outside the JSON.
+Do NOT generate multiple code blocks.
+Do NOT ask questions.
+
+If any rule fails, STOP and return a plain text error message instead of JSON.
+
+========================================
+CANDIDATE PROFILE
+========================================
+${candidateProfileBlock}
+` + PROMPT_STATIC_AFTER_PROFILE.replace('{{SENTENCE_COUNT_PER_COMPANY}}', sentenceCountPerCompany);
 </script>
 
 <main class="layout">
@@ -67,6 +221,14 @@
       <label class="detail-row">
         <span class="detail-label">Email</span>
         <input type="email" bind:value={email} placeholder="you@example.com" />
+      </label>
+      <label class="detail-row">
+        <span class="detail-label">Experience level</span>
+        <input
+          type="text"
+          bind:value={experienceLevel}
+          placeholder="e.g. Senior with 10+ years of experience"
+        />
       </label>
 
       <div class="section-block">
@@ -140,9 +302,11 @@
   </section>
   <section class="column-second">
     <textarea
-      class="panel"
-      placeholder="Column 2 – row 1"
+      class="panel panel-readonly"
+      placeholder="AI prompt (synced from Details)"
       spellcheck="false"
+      readonly
+      value={aiPromptText}
     ></textarea>
     <textarea
       class="panel"
@@ -331,6 +495,11 @@
 
   .column-second .panel {
     flex: 1;
+  }
+
+  .panel-readonly {
+    cursor: default;
+    opacity: 0.95;
   }
 
   .panel::placeholder {
