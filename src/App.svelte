@@ -1,47 +1,82 @@
 <script lang="ts">
-  import svelteLogo from './assets/svelte.svg'
-  import viteLogo from '/vite.svg'
-  import Counter from './lib/Counter.svelte'
+  // Resume builder: 3-part layout
 </script>
 
-<main>
-  <div>
-    <a href="https://vite.dev" target="_blank" rel="noreferrer">
-      <img src={viteLogo} class="logo" alt="Vite Logo" />
-    </a>
-    <a href="https://svelte.dev" target="_blank" rel="noreferrer">
-      <img src={svelteLogo} class="logo svelte" alt="Svelte Logo" />
-    </a>
-  </div>
-  <h1>Vite + Svelte</h1>
-
-  <div class="card">
-    <Counter />
-  </div>
-
-  <p>
-    Check out <a href="https://github.com/sveltejs/kit#readme" target="_blank" rel="noreferrer">SvelteKit</a>, the official Svelte app framework powered by Vite!
-  </p>
-
-  <p class="read-the-docs">
-    Click on the Vite and Svelte logos to learn more
-  </p>
+<main class="layout">
+  <section class="column-first">
+    <textarea
+      class="panel"
+      placeholder="Column 1 – main content"
+      spellcheck="false"
+    ></textarea>
+  </section>
+  <section class="column-second">
+    <textarea
+      class="panel"
+      placeholder="Column 2 – row 1"
+      spellcheck="false"
+    ></textarea>
+    <textarea
+      class="panel"
+      placeholder="Column 2 – row 2"
+      spellcheck="false"
+    ></textarea>
+  </section>
 </main>
 
 <style>
-  .logo {
-    height: 6em;
-    padding: 1.5em;
-    will-change: filter;
-    transition: filter 300ms;
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    height: 100vh;
+    width: 100%;
+    padding: 0.5rem;
+    box-sizing: border-box;
   }
-  .logo:hover {
-    filter: drop-shadow(0 0 2em #646cffaa);
+
+  .column-first {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
   }
-  .logo.svelte:hover {
-    filter: drop-shadow(0 0 2em #ff3e00aa);
+
+  .column-second {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-height: 0;
   }
-  .read-the-docs {
-    color: #888;
+
+  .panel {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.05);
+    color: inherit;
+    font: inherit;
+    resize: none;
+    box-sizing: border-box;
+  }
+
+  .column-second .panel {
+    flex: 1;
+  }
+
+  .panel::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+  }
+
+  @media (prefers-color-scheme: light) {
+    .panel {
+      border-color: rgba(0, 0, 0, 0.12);
+      background: rgba(0, 0, 0, 0.03);
+    }
+    .panel::placeholder {
+      color: rgba(0, 0, 0, 0.45);
+    }
   }
 </style>
