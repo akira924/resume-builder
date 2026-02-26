@@ -240,6 +240,12 @@ CANDIDATE PROFILE
 ========================================
 ${candidateProfileBlock}
 ` + PROMPT_STATIC_AFTER_PROFILE.replace('{{SENTENCE_COUNT_PER_COMPANY}}', sentenceCountPerCompany);
+
+  async function copyAiPromptToClipboard() {
+    try {
+      await navigator.clipboard.writeText(aiPromptText);
+    } catch (_) {}
+  }
 </script>
 
 <main class="layout">
@@ -350,7 +356,7 @@ ${candidateProfileBlock}
         readonly
         value={aiPromptText}
       ></textarea>
-      <button type="button" class="btn-icon" title="Copy" aria-label="Copy">
+      <button type="button" class="btn-icon" title="Copy" aria-label="Copy" on:click={copyAiPromptToClipboard}>
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
           <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
