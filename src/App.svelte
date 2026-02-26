@@ -338,18 +338,35 @@ ${candidateProfileBlock}
     </div>
   </section>
   <section class="column-second">
-    <textarea
-      class="panel panel-readonly"
-      placeholder="AI prompt (synced from Details)"
-      spellcheck="false"
-      readonly
-      value={aiPromptText}
-    ></textarea>
-    <textarea
-      class="panel"
-      placeholder="Column 2 – row 2"
-      spellcheck="false"
-    ></textarea>
+    <div class="textarea-wrap">
+      <textarea
+        class="panel panel-readonly"
+        placeholder="AI prompt (synced from Details)"
+        spellcheck="false"
+        readonly
+        value={aiPromptText}
+      ></textarea>
+      <button type="button" class="btn-icon" title="Copy" aria-label="Copy">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        </svg>
+      </button>
+    </div>
+    <div class="textarea-wrap">
+      <textarea
+        class="panel"
+        placeholder="Column 2 – row 2"
+        spellcheck="false"
+      ></textarea>
+      <button type="button" class="btn-icon" title="Download" aria-label="Download">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+      </button>
+    </div>
   </section>
 </main>
 
@@ -516,6 +533,44 @@ ${candidateProfileBlock}
     min-height: 0;
   }
 
+  .textarea-wrap {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+  }
+
+  .textarea-wrap .panel {
+    flex: 1;
+  }
+
+  .btn-icon {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .btn-icon:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+  }
+
+  .btn-icon:active {
+    background: rgba(255, 255, 255, 0.15);
+  }
+
   .panel {
     flex: 1;
     min-height: 0;
@@ -550,6 +605,17 @@ ${candidateProfileBlock}
     }
     .panel::placeholder {
       color: rgba(0, 0, 0, 0.45);
+    }
+    .btn-icon {
+      background: rgba(0, 0, 0, 0.06);
+      color: rgba(0, 0, 0, 0.7);
+    }
+    .btn-icon:hover {
+      background: rgba(0, 0, 0, 0.12);
+      color: #000;
+    }
+    .btn-icon:active {
+      background: rgba(0, 0, 0, 0.08);
     }
   }
 </style>
