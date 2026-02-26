@@ -241,9 +241,15 @@ CANDIDATE PROFILE
 ${candidateProfileBlock}
 ` + PROMPT_STATIC_AFTER_PROFILE.replace('{{SENTENCE_COUNT_PER_COMPANY}}', sentenceCountPerCompany);
 
+  let copyButtonJustCopied = false;
+
   async function copyAiPromptToClipboard() {
     try {
       await navigator.clipboard.writeText(aiPromptText);
+      copyButtonJustCopied = true;
+      setTimeout(() => {
+        copyButtonJustCopied = false;
+      }, 3000);
     } catch (_) {}
   }
 </script>
@@ -356,11 +362,16 @@ ${candidateProfileBlock}
         readonly
         value={aiPromptText}
       ></textarea>
-      <button type="button" class="btn-icon" title="Copy" aria-label="Copy" on:click={copyAiPromptToClipboard}>
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-        </svg>
+      <button type="button" class="btn-icon copy-btn" title={copyButtonJustCopied ? 'Copied!' : 'Copy'} aria-label={copyButtonJustCopied ? 'Copied' : 'Copy'} on:click={copyAiPromptToClipboard}>
+        <span class="copy-btn-icon" class:copied={copyButtonJustCopied}>
+          <svg class="icon-copy" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          <svg class="icon-check" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </span>
       </button>
     </div>
     <div class="textarea-wrap">
@@ -579,6 +590,39 @@ ${candidateProfileBlock}
 
   .btn-icon:active {
     background: rgba(255, 255, 255, 0.15);
+  }
+
+  .copy-btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 14px;
+    height: 14px;
+  }
+
+  .copy-btn-icon .icon-copy,
+  .copy-btn-icon .icon-check {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    transition: opacity 0.25s ease;
+  }
+
+  .copy-btn-icon .icon-copy {
+    opacity: 1;
+  }
+
+  .copy-btn-icon .icon-check {
+    opacity: 0;
+  }
+
+  .copy-btn-icon.copied .icon-copy {
+    opacity: 0;
+  }
+
+  .copy-btn-icon.copied .icon-check {
+    opacity: 1;
   }
 
   .panel {
