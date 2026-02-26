@@ -1,6 +1,8 @@
 <script lang="ts">
   // Resume builder: 3-part layout
 
+  const DETAILS_STORAGE_KEY = 'resume-builder-details';
+
   type CareerEntry = {
     companyName: string;
     date: string;
@@ -26,6 +28,41 @@
   let education: EducationEntry[] = [
     { institution: '', degreeMajor: '', date: '', location: '' },
   ];
+
+  function loadDetailsFromStorage() {
+    if (typeof window === 'undefined') return;
+    try {
+      const raw = localStorage.getItem(DETAILS_STORAGE_KEY);
+      if (raw) {
+        const data = JSON.parse(raw);
+        if (data.fullName !== undefined) fullName = data.fullName;
+        if (data.location !== undefined) location = data.location;
+        if (data.phone !== undefined) phone = data.phone;
+        if (data.email !== undefined) email = data.email;
+        if (data.experienceLevel !== undefined) experienceLevel = data.experienceLevel;
+        if (Array.isArray(data.career) && data.career.length > 0) career = data.career;
+        if (Array.isArray(data.education) && data.education.length > 0) education = data.education;
+      }
+    } catch (_) {}
+  }
+  loadDetailsFromStorage();
+
+  $: if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem(
+        DETAILS_STORAGE_KEY,
+        JSON.stringify({
+          fullName,
+          location,
+          phone,
+          email,
+          experienceLevel,
+          career,
+          education,
+        })
+      );
+    } catch (_) {}
+  }
 
   function addCareer() {
     career = [
@@ -161,7 +198,7 @@ JOB DESCRIPTION
     if (education.length > 0 && (education[0].institution || education[0].degreeMajor || education[0].date)) {
       const ed = education
         .filter((e) => e.institution || e.degreeMajor || e.date)
-        .map((e) => [e.degreeMajor, e.institution, e.date].filter(Boolean).join(', '))
+        .map((e) => [e.degreeMajor, e.institution, e.date, e.location].filter(Boolean).join(', '))
         .join('; ');
       if (ed) lines.push('Education: ' + ed);
     }
