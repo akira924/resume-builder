@@ -161,6 +161,10 @@ EXPERIENCE – SENTENCE RULES (VERY IMPORTANT)
 - All technologies must be included only after their first version. (or alpha release date)
 SENTENCE COUNT PER COMPANY
 {{SENTENCE_COUNT_PER_COMPANY}}
+EDUCATION DEGREE RULES:
+Only modify the degree if it is not related to the job description.
+- Each degree should be appropriate for the job description.
+- Each degree should be common in the industry.
 
 ========================================
 FORMATTING RULES
