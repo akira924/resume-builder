@@ -287,7 +287,18 @@ ${candidateProfileBlock}
     }
   }
 
-  function downloadResumePdf() {
+  async function loadFontAsBase64(url: string): Promise<string> {
+    const response = await fetch(url);
+    const buffer = await response.arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    for (let i = 0; i < bytes.length; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+  }
+
+  async function downloadResumePdf() {
     downloadError = '';
     const data = parseResumeJson(jsonInput);
     if (!data) {
@@ -296,16 +307,29 @@ ${candidateProfileBlock}
     }
 
     const doc = new jsPDF({ unit: 'mm', format: 'letter' });
+
+    const [verdanaRegular, verdanaBold, verdanaItalic] = await Promise.all([
+      loadFontAsBase64('/fonts/verdana.ttf'),
+      loadFontAsBase64('/fonts/verdanab.ttf'),
+      loadFontAsBase64('/fonts/verdanai.ttf'),
+    ]);
+    doc.addFileToVFS('verdana.ttf', verdanaRegular);
+    doc.addFont('verdana.ttf', 'verdana', 'normal');
+    doc.addFileToVFS('verdanab.ttf', verdanaBold);
+    doc.addFont('verdanab.ttf', 'verdana', 'bold');
+    doc.addFileToVFS('verdanai.ttf', verdanaItalic);
+    doc.addFont('verdanai.ttf', 'verdana', 'italic');
+
     const margin = 10.16;
     const pageW = 215.9;
     const pageH = 279.4;
     const contentW = pageW - 2 * margin;
-    // Resume styles: Helvetica, 11pt body, 22pt full name, 1.5x line spacing
     const bodyFontSize = 11;
     const nameFontSize = 22;
     const lineSpacing = 1.5;
     const ptToMm = 25.4 / 72;
     const bodyLineHeight = bodyFontSize * lineSpacing * ptToMm;
+    const naturalGreen: [number, number, number] = [34, 139, 34];
     // offset baseline so the cap-top of the first text lands at the margin edge
     let y = margin + nameFontSize * 0.72 * ptToMm;
     const nameLineHeight = nameFontSize * 1.15 * ptToMm;
@@ -324,7 +348,7 @@ ${candidateProfileBlock}
 
     function addWrappedText(text: string, fontSize: number, bold = false) {
       doc.setFontSize(fontSize);
-      doc.setFont('helvetica', bold ? 'bold' : 'normal');
+      doc.setFont('verdana', bold ? 'bold' : 'normal');
       const lineHeightMm = fontSize * lineSpacing * ptToMm;
       const lines = doc.splitTextToSize(text, contentW);
       for (const line of lines) {
@@ -339,8 +363,8 @@ ${candidateProfileBlock}
       checkNewPage(sectionTitleLineHeight * 1.5);
       y += sectionGap;
       doc.setFontSize(bodyFontSize);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(31, 97, 165);
+      doc.setFont('verdana', 'bold');
+      doc.setTextColor(...naturalGreen);
       doc.text(title, margin, y);
       doc.setTextColor(0, 0, 0);
       y += sectionTitleLineHeight;
@@ -350,22 +374,23 @@ ${candidateProfileBlock}
     const h = data.header;
     if (h?.name) {
       doc.setFontSize(nameFontSize);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(31, 97, 165);
+      doc.setFont('verdana', 'bold');
+      doc.setTextColor(...naturalGreen);
       doc.text(h.name, margin, y);
       doc.setTextColor(0, 0, 0);
       y += nameLineHeight;
     }
     if (h?.role) {
       doc.setFontSize(bodyFontSize);
-      doc.setFont('helvetica', 'bold');
+      doc.setFont('verdana', 'bold');
       doc.text(h.role, margin, y);
-      doc.setFont('helvetica', 'normal');
+      doc.setFont('verdana', 'normal');
       nextLine();
     }
     const contactParts = [h?.address, h?.phone, h?.email].filter(Boolean);
     if (contactParts.length) {
       doc.setFontSize(bodyFontSize);
+      doc.setFont('verdana', 'normal');
       doc.text(contactParts.join('  |  '), margin, y);
       nextLine();
     }
@@ -390,16 +415,16 @@ ${candidateProfileBlock}
             if (!categoryLabel) {
               addWrappedText(skillsText, bodyFontSize);
             } else {
-              doc.setFont('helvetica', 'bold');
+              doc.setFont('verdana', 'bold');
               const catWidth = doc.getTextWidth(categoryLabel);
-              doc.setFont('helvetica', 'normal');
+              doc.setFont('verdana', 'normal');
               const fullText = categoryLabel + skillsText;
               const lines = doc.splitTextToSize(fullText, contentW);
 
               checkNewPage(skillLineHeight);
-              doc.setFont('helvetica', 'bold');
+              doc.setFont('verdana', 'bold');
               doc.text(categoryLabel, margin, y);
-              doc.setFont('helvetica', 'normal');
+              doc.setFont('verdana', 'normal');
               doc.text(lines[0].substring(categoryLabel.length), margin + catWidth, y);
               y += skillLineHeight;
 
@@ -420,41 +445,44 @@ ${candidateProfileBlock}
       for (let ei = 0; ei < data.experience.length; ei++) {
         const exp = data.experience[ei];
         checkNewPage(bodyLineHeight * 2);
-        if (exp.title || exp.duration) {
-          doc.setFontSize(bodyFontSize);
-          if (exp.title) {
-            doc.setFont('helvetica', 'bold');
-            doc.setTextColor(0, 0, 0);
-            doc.text(exp.title, margin, y);
-          }
-          if (exp.duration) {
-            doc.setFont('helvetica', 'normal');
-            doc.setTextColor(120, 120, 120);
-            doc.text(exp.duration, margin + contentW, y, { align: 'right' });
-            doc.setTextColor(0, 0, 0);
-          }
-          nextLine();
-        }
+        // Row 1: company (bold, left) | location (italic gray, right)
         if (exp.company || exp.location) {
           doc.setFontSize(bodyFontSize);
           if (exp.company) {
-            doc.setFont('helvetica', 'normal');
+            doc.setFont('verdana', 'bold');
             doc.setTextColor(0, 0, 0);
             doc.text(exp.company, margin, y);
           }
           if (exp.location) {
-            doc.setFont('helvetica', 'italic');
+            doc.setFont('verdana', 'italic');
             doc.setTextColor(120, 120, 120);
             doc.text(exp.location, margin + contentW, y, { align: 'right' });
             doc.setTextColor(0, 0, 0);
           }
           nextLine();
         }
+        // Row 2: role/title (normal, left) | date/duration (gray, right)
+        if (exp.title || exp.duration) {
+          doc.setFontSize(bodyFontSize);
+          if (exp.title) {
+            doc.setFont('verdana', 'normal');
+            doc.setTextColor(0, 0, 0);
+            doc.text(exp.title, margin, y);
+          }
+          if (exp.duration) {
+            doc.setFont('verdana', 'normal');
+            doc.setTextColor(120, 120, 120);
+            doc.text(exp.duration, margin + contentW, y, { align: 'right' });
+            doc.setTextColor(0, 0, 0);
+          }
+          nextLine();
+        }
         if (exp.sentences?.length) {
           doc.setFontSize(bodyFontSize);
-          doc.setFont('helvetica', 'normal');
+          doc.setFont('verdana', 'normal');
           const bullet = '\u2022';
-          const bulletGap = doc.getTextWidth(bullet + ' ');
+          const bulletSymbolWidth = doc.getTextWidth(bullet);
+          const bulletGap = bulletSymbolWidth + 4 * ptToMm;
           const bulletIndent = contentW - bulletGap;
           for (const sent of exp.sentences) {
             const lines = doc.splitTextToSize(sent, bulletIndent);
@@ -483,30 +511,30 @@ ${candidateProfileBlock}
         const hasRow1 = ed.degree || ed.date;
         const hasRow2 = ed.institution || ed.location;
         checkNewPage(bodyLineHeight * (hasRow1 && hasRow2 ? 2 : 1));
-        // Row 1: degree (left), date (right)
+        // Row 1: degree (bold, left), date (gray, right)
         if (hasRow1) {
           if (ed.degree) {
-            doc.setFont('helvetica', 'bold');
+            doc.setFont('verdana', 'bold');
             doc.setTextColor(0, 0, 0);
             doc.text(ed.degree, margin, y);
           }
           if (ed.date) {
-            doc.setFont('helvetica', 'normal');
+            doc.setFont('verdana', 'normal');
             doc.setTextColor(120, 120, 120);
             doc.text(ed.date, margin + contentW, y, { align: 'right' });
             doc.setTextColor(0, 0, 0);
           }
           y += bodyLineHeight;
         }
-        // Row 2: institution (left), location (right)
+        // Row 2: institution (left), location (italic gray, right)
         if (hasRow2) {
           if (ed.institution) {
-            doc.setFont('helvetica', 'normal');
+            doc.setFont('verdana', 'normal');
             doc.setTextColor(0, 0, 0);
             doc.text(ed.institution, margin, y);
           }
           if (ed.location) {
-            doc.setFont('helvetica', 'italic');
+            doc.setFont('verdana', 'italic');
             doc.setTextColor(120, 120, 120);
             doc.text(ed.location, margin + contentW, y, { align: 'right' });
             doc.setTextColor(0, 0, 0);
