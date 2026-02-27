@@ -164,6 +164,7 @@ JOB TITLE RULES:
 - Simple, Concise, and Common in the industry
 - Job titles should be familiar to the career flow
 SUMMARY
+- 4-5 sentences
 - Professional, ATS-optimized, Confident and Concise
 - Aligned directly to the job description
 SKILLS
