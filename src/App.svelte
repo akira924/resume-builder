@@ -136,6 +136,7 @@ ROLE
 - 2-4 words long
 - Appropriate for the job description
 - Simple, Concise, and Common in the industry
+- Seniority level should be aligned with the candidate's total experience years.
 JOB TITLE RULES:
 - 2-4 words long
 - Appropriate for the job description
