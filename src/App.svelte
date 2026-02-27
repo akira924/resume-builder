@@ -236,7 +236,7 @@ JOB DESCRIPTION
         'Career History:',
         ...career
           .filter((c) => c.companyName || c.date)
-          .map((c) => `${c.companyName}: ${c.date}`.trim())
+          .map((c) => [c.companyName, c.date, c.location].filter(Boolean).join(', '))
       );
     }
     return lines.join('\n');
@@ -315,7 +315,7 @@ ${candidateProfileBlock}
     function checkNewPage(needed = 15) {
       if (y > pageH - margin - needed) {
         doc.addPage();
-        y = margin;
+        y = margin + bodyFontSize * 0.72 * ptToMm;
       }
     }
 
@@ -337,7 +337,9 @@ ${candidateProfileBlock}
       y += sectionGap;
       doc.setFontSize(bodyFontSize);
       doc.setFont('helvetica', 'bold');
+      doc.setTextColor(31, 97, 165);
       doc.text(title, margin, y);
+      doc.setTextColor(0, 0, 0);
       y += sectionTitleLineHeight;
     }
 
@@ -346,13 +348,16 @@ ${candidateProfileBlock}
     if (h?.name) {
       doc.setFontSize(nameFontSize);
       doc.setFont('helvetica', 'bold');
+      doc.setTextColor(31, 97, 165);
       doc.text(h.name, margin, y);
+      doc.setTextColor(0, 0, 0);
       y += nameLineHeight;
     }
     if (h?.role) {
       doc.setFontSize(bodyFontSize);
-      doc.setFont('helvetica', 'normal');
+      doc.setFont('helvetica', 'bold');
       doc.text(h.role, margin, y);
+      doc.setFont('helvetica', 'normal');
       nextLine();
     }
     const contactParts = [h?.address, h?.phone, h?.email].filter(Boolean);
@@ -414,16 +419,32 @@ ${candidateProfileBlock}
         checkNewPage(bodyLineHeight * 2);
         if (exp.title || exp.duration) {
           doc.setFontSize(bodyFontSize);
-          doc.setFont('helvetica', 'bold');
-          if (exp.title) doc.text(exp.title, margin, y);
-          if (exp.duration) doc.text(exp.duration, margin + contentW, y, { align: 'right' });
+          if (exp.title) {
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(0, 0, 0);
+            doc.text(exp.title, margin, y);
+          }
+          if (exp.duration) {
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(120, 120, 120);
+            doc.text(exp.duration, margin + contentW, y, { align: 'right' });
+            doc.setTextColor(0, 0, 0);
+          }
           nextLine();
         }
         if (exp.company || exp.location) {
           doc.setFontSize(bodyFontSize);
-          doc.setFont('helvetica', 'normal');
-          if (exp.company) doc.text(exp.company, margin, y);
-          if (exp.location) doc.text(exp.location, margin + contentW, y, { align: 'right' });
+          if (exp.company) {
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(0, 0, 0);
+            doc.text(exp.company, margin, y);
+          }
+          if (exp.location) {
+            doc.setFont('helvetica', 'italic');
+            doc.setTextColor(120, 120, 120);
+            doc.text(exp.location, margin + contentW, y, { align: 'right' });
+            doc.setTextColor(0, 0, 0);
+          }
           nextLine();
         }
         if (exp.sentences?.length) {
@@ -458,8 +479,30 @@ ${candidateProfileBlock}
       doc.setFont('helvetica', 'normal');
       for (const ed of data.education) {
         checkNewPage(bodyLineHeight);
-        const line = [ed.degree, ed.institution, ed.date, ed.location].filter(Boolean).join(', ');
-        if (line) addWrappedText(line, bodyFontSize);
+        const baseText = [ed.degree, ed.institution].filter(Boolean).join(', ');
+        const dateText = ed.date ? (baseText ? ', ' + ed.date : ed.date) : '';
+        doc.setFontSize(bodyFontSize);
+        if (baseText) {
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(0, 0, 0);
+          doc.text(baseText, margin, y);
+        }
+        if (dateText) {
+          const baseWidth = baseText ? doc.getTextWidth(baseText) : 0;
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(120, 120, 120);
+          doc.text(dateText, margin + baseWidth, y);
+          doc.setTextColor(0, 0, 0);
+        }
+        if (ed.location) {
+          doc.setFont('helvetica', 'italic');
+          doc.setTextColor(120, 120, 120);
+          doc.text(ed.location, margin + contentW, y, { align: 'right' });
+          doc.setTextColor(0, 0, 0);
+        }
+        if (baseText || dateText || ed.location) {
+          y += bodyFontSize * lineSpacing * ptToMm;
+        }
       }
     }
 
