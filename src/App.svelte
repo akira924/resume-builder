@@ -362,13 +362,13 @@ ${candidateProfileBlock}
 
     // Summary
     if (data.summary) {
-      addSectionTitle('Summary');
+      addSectionTitle('PROFESSIONAL SUMMARY');
       addWrappedText(data.summary, bodyFontSize);
     }
 
     // Skills
     if (data.skills?.length) {
-      addSectionTitle('Skills');
+      addSectionTitle('TECHNICAL SKILLS');
       doc.setFontSize(bodyFontSize);
       doc.setFont('helvetica', 'normal');
       for (const cat of data.skills) {
@@ -383,7 +383,7 @@ ${candidateProfileBlock}
 
     // Experience
     if (data.experience?.length) {
-      addSectionTitle('Experience');
+      addSectionTitle('WORK EXPERIENCE');
       for (const exp of data.experience) {
         checkNewPage(bodyLineHeight * 2);
         const title = [exp.title, exp.company].filter(Boolean).join(', ');
@@ -412,7 +412,7 @@ ${candidateProfileBlock}
 
     // Education
     if (data.education?.length) {
-      addSectionTitle('Education');
+      addSectionTitle('EDUCATION');
       doc.setFontSize(bodyFontSize);
       doc.setFont('helvetica', 'normal');
       for (const ed of data.education) {
@@ -471,7 +471,7 @@ ${candidateProfileBlock}
 
       <div class="section-block">
         <div class="section-header">
-          <h3 class="section-title">Career</h3>
+          <h3 class="section-title">WORK EXPERIENCE</h3>
           <button type="button" class="btn-small" on:click={addCareer}
             >+ Add</button
           >
@@ -507,7 +507,7 @@ ${candidateProfileBlock}
 
       <div class="section-block">
         <div class="section-header">
-          <h3 class="section-title">Education</h3>
+          <h3 class="section-title">EDUCATION</h3>
           <button type="button" class="btn-small" on:click={addEducation}
             >+ Add</button
           >
