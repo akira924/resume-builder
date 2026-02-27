@@ -292,19 +292,20 @@ ${candidateProfileBlock}
       return;
     }
 
-    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-    const margin = 20;
-    const pageW = 210;
-    const pageH = 297;
+    const doc = new jsPDF({ unit: 'mm', format: 'letter' });
+    const margin = 10.16;
+    const pageW = 215.9;
+    const pageH = 279.4;
     const contentW = pageW - 2 * margin;
-    let y = margin;
     // Resume styles: Helvetica, 11pt body, 22pt full name, 1.5x line spacing
     const bodyFontSize = 11;
     const nameFontSize = 22;
     const lineSpacing = 1.5;
     const ptToMm = 25.4 / 72;
     const bodyLineHeight = bodyFontSize * lineSpacing * ptToMm;
-    const nameLineHeight = nameFontSize * lineSpacing * ptToMm;
+    // offset baseline so the cap-top of the first text lands at the margin edge
+    let y = margin + nameFontSize * 0.72 * ptToMm;
+    const nameLineHeight = nameFontSize * 1.15 * ptToMm;
     const sectionGap = bodyLineHeight;
 
     function nextLine(h = bodyLineHeight) {
@@ -331,12 +332,13 @@ ${candidateProfileBlock}
     }
 
     function addSectionTitle(title: string) {
-      checkNewPage(bodyLineHeight * 1.5);
+      const sectionTitleLineHeight = bodyFontSize * 2.0 * ptToMm;
+      checkNewPage(sectionTitleLineHeight * 1.5);
       y += sectionGap;
       doc.setFontSize(bodyFontSize);
       doc.setFont('helvetica', 'bold');
       doc.text(title, margin, y);
-      nextLine();
+      y += sectionTitleLineHeight;
     }
 
     // Header
@@ -370,12 +372,35 @@ ${candidateProfileBlock}
     if (data.skills?.length) {
       addSectionTitle('TECHNICAL SKILLS');
       doc.setFontSize(bodyFontSize);
-      doc.setFont('helvetica', 'normal');
+      const skillLineHeight = bodyFontSize * lineSpacing * ptToMm;
       for (const cat of data.skills) {
         for (const [category, list] of Object.entries(cat)) {
           if (list?.length) {
-            const skillText = [category, list.join(', ')].filter(Boolean).join(': ');
-            addWrappedText(skillText, bodyFontSize);
+            const categoryLabel = category ? category + ': ' : '';
+            const skillsText = list.join(', ');
+
+            if (!categoryLabel) {
+              addWrappedText(skillsText, bodyFontSize);
+            } else {
+              doc.setFont('helvetica', 'bold');
+              const catWidth = doc.getTextWidth(categoryLabel);
+              doc.setFont('helvetica', 'normal');
+              const fullText = categoryLabel + skillsText;
+              const lines = doc.splitTextToSize(fullText, contentW);
+
+              checkNewPage(skillLineHeight);
+              doc.setFont('helvetica', 'bold');
+              doc.text(categoryLabel, margin, y);
+              doc.setFont('helvetica', 'normal');
+              doc.text(lines[0].substring(categoryLabel.length), margin + catWidth, y);
+              y += skillLineHeight;
+
+              for (let i = 1; i < lines.length; i++) {
+                checkNewPage(skillLineHeight);
+                doc.text(lines[i], margin, y);
+                y += skillLineHeight;
+              }
+            }
           }
         }
       }
@@ -384,27 +409,43 @@ ${candidateProfileBlock}
     // Experience
     if (data.experience?.length) {
       addSectionTitle('WORK EXPERIENCE');
-      for (const exp of data.experience) {
+      for (let ei = 0; ei < data.experience.length; ei++) {
+        const exp = data.experience[ei];
         checkNewPage(bodyLineHeight * 2);
-        const title = [exp.title, exp.company].filter(Boolean).join(', ');
-        const meta = [exp.duration, exp.location].filter(Boolean).join(' — ');
-        if (title) {
+        if (exp.title || exp.duration) {
           doc.setFontSize(bodyFontSize);
           doc.setFont('helvetica', 'bold');
-          doc.text(title, margin, y);
+          if (exp.title) doc.text(exp.title, margin, y);
+          if (exp.duration) doc.text(exp.duration, margin + contentW, y, { align: 'right' });
           nextLine();
         }
-        if (meta) {
+        if (exp.company || exp.location) {
           doc.setFontSize(bodyFontSize);
           doc.setFont('helvetica', 'normal');
-          doc.text(meta, margin, y);
+          if (exp.company) doc.text(exp.company, margin, y);
+          if (exp.location) doc.text(exp.location, margin + contentW, y, { align: 'right' });
           nextLine();
         }
         if (exp.sentences?.length) {
           doc.setFontSize(bodyFontSize);
+          doc.setFont('helvetica', 'normal');
+          const bullet = '\u2022';
+          const bulletGap = doc.getTextWidth(bullet + ' ');
+          const bulletIndent = contentW - bulletGap;
           for (const sent of exp.sentences) {
-            addWrappedText(sent, bodyFontSize);
+            const lines = doc.splitTextToSize(sent, bulletIndent);
+            checkNewPage(bodyLineHeight);
+            doc.text(bullet, margin, y);
+            doc.text(lines[0], margin + bulletGap, y);
+            y += bodyLineHeight;
+            for (let li = 1; li < lines.length; li++) {
+              checkNewPage(bodyLineHeight);
+              doc.text(lines[li], margin + bulletGap, y);
+              y += bodyLineHeight;
+            }
           }
+        }
+        if (ei < data.experience.length - 1) {
           nextLine(bodyLineHeight * 0.5);
         }
       }
