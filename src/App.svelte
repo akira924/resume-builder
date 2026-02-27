@@ -168,7 +168,7 @@ SUMMARY
 - Professional, ATS-optimized, Confident and Concise
 - Aligned directly to the job description
 SKILLS
-- 30–40 total skills
+- At least 30–40 total skills
 - Categorized
 - Must include technologies from the job description
 - Only include technologies released during the work period
@@ -476,32 +476,39 @@ ${candidateProfileBlock}
     if (data.education?.length) {
       addSectionTitle('EDUCATION');
       doc.setFontSize(bodyFontSize);
-      doc.setFont('helvetica', 'normal');
       for (const ed of data.education) {
-        checkNewPage(bodyLineHeight);
-        const baseText = [ed.degree, ed.institution].filter(Boolean).join(', ');
-        const dateText = ed.date ? (baseText ? ', ' + ed.date : ed.date) : '';
-        doc.setFontSize(bodyFontSize);
-        if (baseText) {
-          doc.setFont('helvetica', 'normal');
-          doc.setTextColor(0, 0, 0);
-          doc.text(baseText, margin, y);
+        const hasRow1 = ed.degree || ed.date;
+        const hasRow2 = ed.institution || ed.location;
+        checkNewPage(bodyLineHeight * (hasRow1 && hasRow2 ? 2 : 1));
+        // Row 1: degree (left), date (right)
+        if (hasRow1) {
+          if (ed.degree) {
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(0, 0, 0);
+            doc.text(ed.degree, margin, y);
+          }
+          if (ed.date) {
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(120, 120, 120);
+            doc.text(ed.date, margin + contentW, y, { align: 'right' });
+            doc.setTextColor(0, 0, 0);
+          }
+          y += bodyLineHeight;
         }
-        if (dateText) {
-          const baseWidth = baseText ? doc.getTextWidth(baseText) : 0;
-          doc.setFont('helvetica', 'normal');
-          doc.setTextColor(120, 120, 120);
-          doc.text(dateText, margin + baseWidth, y);
-          doc.setTextColor(0, 0, 0);
-        }
-        if (ed.location) {
-          doc.setFont('helvetica', 'italic');
-          doc.setTextColor(120, 120, 120);
-          doc.text(ed.location, margin + contentW, y, { align: 'right' });
-          doc.setTextColor(0, 0, 0);
-        }
-        if (baseText || dateText || ed.location) {
-          y += bodyFontSize * lineSpacing * ptToMm;
+        // Row 2: institution (left), location (right)
+        if (hasRow2) {
+          if (ed.institution) {
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(0, 0, 0);
+            doc.text(ed.institution, margin, y);
+          }
+          if (ed.location) {
+            doc.setFont('helvetica', 'italic');
+            doc.setTextColor(120, 120, 120);
+            doc.text(ed.location, margin + contentW, y, { align: 'right' });
+            doc.setTextColor(0, 0, 0);
+          }
+          y += bodyLineHeight;
         }
       }
     }
