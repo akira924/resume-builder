@@ -513,7 +513,8 @@ ${candidateProfileBlock}
       }
     }
 
-    const fileName = (h?.name || 'resume').replace(/\s+/g, '-').replace(/[^\w\-]/g, '') || 'resume';
+    const namePart = (h?.name || '').replace(/\s+/g, '_').replace(/[^\w]/g, '');
+    const fileName = namePart ? `${namePart}_resume` : 'resume';
     doc.save(`${fileName}.pdf`);
   }
 
