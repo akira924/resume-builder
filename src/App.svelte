@@ -164,11 +164,10 @@ JOB TITLE RULES:
 - Simple, Concise, and Common in the industry
 - Job titles should be familiar to the career flow
 SUMMARY
-- 3–4 sentences
 - Professional, ATS-optimized, Confident and Concise
 - Aligned directly to the job description
 SKILLS
-- 30–35 total skills
+- 30–40 total skills
 - Categorized
 - Must include technologies from the job description
 - Only include technologies released during the work period
