@@ -126,7 +126,7 @@ Return ONE JSON object with the following structure:
   },
   "summary": "",
   "skills": [
-    { "category": ["Skill1", "Skill2", "..."] }
+    { "Category1": ["Skill1", "Skill2", "..."] }
   ],
   "experience": [
     {
