@@ -37,17 +37,20 @@
     location: string;
   };
 
-  let fullName = '';
-  let location = '';
-  let phone = '';
-  let email = '';
-  let experienceLevel = '';
+  let fullName = 'Robert Six';
+  let location = 'Fallston, MD 21047, USA';
+  let phone = '+1 404 913-0753';
+  let email = 'six.robert22@gmail.com';
+  let experienceLevel = 'Senior with 10+ years of experience';
 
   let career: CareerEntry[] = [
-    { companyName: '', date: '', location: '', bulletCount: 3 },
+    { companyName: 'ClickHouse', date: '09/2023 - Present', location: 'San Francisco, CA', bulletCount: 10 },
+    { companyName: 'Vast', date: '05/2020 - 08/2023', location: 'Long Beach, CA', bulletCount: 8 },
+    { companyName: 'Orases', date: '01/2017 - 04/2020', location: 'Frederick, MD', bulletCount: 7 },
+    { companyName: 'Enterprise64', date: '02/2015 - 12/2016', location: 'Bethesda, MD', bulletCount: 6 },
   ];
   let education: EducationEntry[] = [
-    { institution: '', degreeMajor: '', date: '', location: '' },
+    { institution: 'University of Maryland, Baltimore County', degreeMajor: 'Bachelor of Science in Computer Science', date: '2014', location: 'Catonsville, MD' },
   ];
 
   function loadDetailsFromStorage() {
@@ -56,13 +59,13 @@
       const raw = localStorage.getItem(DETAILS_STORAGE_KEY);
       if (raw) {
         const data = JSON.parse(raw);
-        if (data.fullName !== undefined) fullName = data.fullName;
-        if (data.location !== undefined) location = data.location;
-        if (data.phone !== undefined) phone = data.phone;
-        if (data.email !== undefined) email = data.email;
-        if (data.experienceLevel !== undefined) experienceLevel = data.experienceLevel;
-        if (Array.isArray(data.career) && data.career.length > 0) career = data.career;
-        if (Array.isArray(data.education) && data.education.length > 0) education = data.education;
+        if (data.fullName) fullName = data.fullName;
+        if (data.location) location = data.location;
+        if (data.phone) phone = data.phone;
+        if (data.email) email = data.email;
+        if (data.experienceLevel) experienceLevel = data.experienceLevel;
+        if (Array.isArray(data.career) && data.career.some((c: CareerEntry) => c.companyName)) career = data.career;
+        if (Array.isArray(data.education) && data.education.some((e: EducationEntry) => e.institution)) education = data.education;
       }
     } catch (_) {}
   }
@@ -538,19 +541,19 @@ ${candidateProfileBlock}
 
       <label class="detail-row">
         <span class="detail-label">Full name</span>
-        <input type="text" bind:value={fullName} placeholder="Your full name" />
+        <input type="text" bind:value={fullName} placeholder="Your full name" readonly />
       </label>
       <label class="detail-row">
         <span class="detail-label">Location</span>
-        <input type="text" bind:value={location} placeholder="City, Country" />
+        <input type="text" bind:value={location} placeholder="City, Country" readonly />
       </label>
       <label class="detail-row">
         <span class="detail-label">Phone No</span>
-        <input type="text" bind:value={phone} placeholder="+1 234 567 8900" />
+        <input type="text" bind:value={phone} placeholder="+1 234 567 8900" readonly />
       </label>
       <label class="detail-row">
         <span class="detail-label">Email</span>
-        <input type="email" bind:value={email} placeholder="you@example.com" />
+        <input type="email" bind:value={email} placeholder="you@example.com" readonly />
       </label>
       <label class="detail-row">
         <span class="detail-label">Experience level</span>
@@ -558,15 +561,13 @@ ${candidateProfileBlock}
           type="text"
           bind:value={experienceLevel}
           placeholder="e.g. Senior with 10+ years of experience"
+          readonly
         />
       </label>
 
       <div class="section-block">
         <div class="section-header">
           <h3 class="section-title">WORK EXPERIENCE</h3>
-          <button type="button" class="btn-small" on:click={addCareer}
-            >+ Add</button
-          >
         </div>
         {#each career as entry, i}
           <div class="multi-row multi-row-career">
@@ -574,9 +575,10 @@ ${candidateProfileBlock}
               type="text"
               bind:value={entry.companyName}
               placeholder="Company name"
+              readonly
             />
-            <input type="text" bind:value={entry.date} placeholder="Date" />
-            <input type="text" bind:value={entry.location} placeholder="Location" />
+            <input type="text" bind:value={entry.date} placeholder="Date" readonly />
+            <input type="text" bind:value={entry.location} placeholder="Location" readonly />
             <input
               type="number"
               bind:value={entry.bulletCount}
@@ -585,14 +587,8 @@ ${candidateProfileBlock}
               placeholder="#"
               class="input-bullets"
               title="Number of bullet points"
+              readonly
             />
-            <button
-              type="button"
-              class="btn-remove"
-              on:click={() => removeCareer(i)}
-              title="Remove row"
-              disabled={career.length <= 1}
-            >−</button>
           </div>
         {/each}
       </div>
@@ -600,9 +596,6 @@ ${candidateProfileBlock}
       <div class="section-block">
         <div class="section-header">
           <h3 class="section-title">EDUCATION</h3>
-          <button type="button" class="btn-small" on:click={addEducation}
-            >+ Add</button
-          >
         </div>
         {#each education as entry, i}
           <div class="multi-row multi-row-4">
@@ -610,21 +603,16 @@ ${candidateProfileBlock}
               type="text"
               bind:value={entry.institution}
               placeholder="Institution"
+              readonly
             />
             <input
               type="text"
               bind:value={entry.degreeMajor}
               placeholder="Degree and major"
+              readonly
             />
-            <input type="text" bind:value={entry.date} placeholder="Date" />
-            <input type="text" bind:value={entry.location} placeholder="Location" />
-            <button
-              type="button"
-              class="btn-remove"
-              on:click={() => removeEducation(i)}
-              title="Remove row"
-              disabled={education.length <= 1}
-            >−</button>
+            <input type="text" bind:value={entry.date} placeholder="Date" readonly />
+            <input type="text" bind:value={entry.location} placeholder="Location" readonly />
           </div>
         {/each}
       </div>
