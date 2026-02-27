@@ -1,7 +1,28 @@
 <script lang="ts">
   // Resume builder: 3-part layout
+  import { jsPDF } from 'jspdf';
 
   const DETAILS_STORAGE_KEY = 'resume-builder-details';
+
+  // Expected shape of resume JSON (from AI prompt output)
+  type ResumeJson = {
+    header?: { name?: string; role?: string; address?: string; phone?: string; email?: string };
+    summary?: string;
+    skills?: Array<Record<string, string[]>>;
+    experience?: Array<{
+      company?: string;
+      title?: string;
+      duration?: string;
+      location?: string;
+      sentences?: string[];
+    }>;
+    education?: Array<{
+      institution?: string;
+      degree?: string;
+      date?: string;
+      location?: string;
+    }>;
+  };
 
   type CareerEntry = {
     companyName: string;
@@ -242,6 +263,163 @@ CANDIDATE PROFILE
 ${candidateProfileBlock}
 ` + PROMPT_STATIC_AFTER_PROFILE.replace('{{SENTENCE_COUNT_PER_COMPANY}}', sentenceCountPerCompany);
 
+  let jsonInput = '';
+  let downloadError = '';
+
+  function extractJsonFromRaw(raw: string): string {
+    const trimmed = raw.trim();
+    const codeBlock = /^```(?:json)?\s*([\s\S]*?)```\s*$/m.exec(trimmed);
+    return codeBlock ? codeBlock[1].trim() : trimmed;
+  }
+
+  function parseResumeJson(raw: string): ResumeJson | null {
+    try {
+      const jsonStr = extractJsonFromRaw(raw);
+      if (!jsonStr) return null;
+      const data = JSON.parse(jsonStr) as ResumeJson;
+      if (!data || typeof data !== 'object') return null;
+      return data;
+    } catch {
+      return null;
+    }
+  }
+
+  function downloadResumePdf() {
+    downloadError = '';
+    const data = parseResumeJson(jsonInput);
+    if (!data) {
+      downloadError = 'Invalid or empty JSON. Paste the resume JSON from the AI output.';
+      return;
+    }
+
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    const margin = 20;
+    const pageW = 210;
+    const pageH = 297;
+    const contentW = pageW - 2 * margin;
+    let y = margin;
+    const lineHeight = 5;
+    const sectionGap = 6;
+    const smallLineHeight = 4;
+
+    function nextLine(h = lineHeight) {
+      y += h;
+    }
+
+    function checkNewPage(needed = 15) {
+      if (y > pageH - margin - needed) {
+        doc.addPage();
+        y = margin;
+      }
+    }
+
+    function addWrappedText(text: string, fontSize: number, bold = false) {
+      doc.setFontSize(fontSize);
+      doc.setFont('helvetica', bold ? 'bold' : 'normal');
+      const lines = doc.splitTextToSize(text, contentW);
+      for (const line of lines) {
+        checkNewPage(smallLineHeight);
+        doc.text(line, margin, y);
+        y += smallLineHeight;
+      }
+    }
+
+    function addSectionTitle(title: string) {
+      checkNewPage(12);
+      y += sectionGap;
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text(title, margin, y);
+      nextLine(lineHeight);
+    }
+
+    // Header
+    const h = data.header;
+    if (h?.name) {
+      doc.setFontSize(18);
+      doc.setFont('helvetica', 'bold');
+      doc.text(h.name, margin, y);
+      nextLine(6);
+    }
+    if (h?.role) {
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'normal');
+      doc.text(h.role, margin, y);
+      nextLine(5);
+    }
+    const contactParts = [h?.address, h?.phone, h?.email].filter(Boolean);
+    if (contactParts.length) {
+      doc.setFontSize(10);
+      doc.text(contactParts.join('  |  '), margin, y);
+      nextLine(sectionGap);
+    }
+
+    // Summary
+    if (data.summary) {
+      addSectionTitle('Summary');
+      addWrappedText(data.summary, 10);
+    }
+
+    // Skills
+    if (data.skills?.length) {
+      addSectionTitle('Skills');
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      for (const cat of data.skills) {
+        for (const [category, list] of Object.entries(cat)) {
+          if (list?.length) {
+            const skillText = [category, list.join(', ')].filter(Boolean).join(': ');
+            addWrappedText(skillText, 10);
+          }
+        }
+      }
+    }
+
+    // Experience
+    if (data.experience?.length) {
+      addSectionTitle('Experience');
+      for (const exp of data.experience) {
+        checkNewPage(20);
+        const title = [exp.title, exp.company].filter(Boolean).join(', ');
+        const meta = [exp.duration, exp.location].filter(Boolean).join(' — ');
+        if (title) {
+          doc.setFontSize(11);
+          doc.setFont('helvetica', 'bold');
+          doc.text(title, margin, y);
+          nextLine(4);
+        }
+        if (meta) {
+          doc.setFontSize(9);
+          doc.setFont('helvetica', 'normal');
+          doc.text(meta, margin, y);
+          nextLine(4);
+        }
+        if (exp.sentences?.length) {
+          doc.setFontSize(9);
+          for (const sent of exp.sentences) {
+            addWrappedText(sent, 9);
+          }
+          nextLine(2);
+        }
+      }
+    }
+
+    // Education
+    if (data.education?.length) {
+      addSectionTitle('Education');
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      for (const ed of data.education) {
+        checkNewPage(10);
+        const line = [ed.degree, ed.institution, ed.date, ed.location].filter(Boolean).join(', ');
+        if (line) addWrappedText(line, 10);
+      }
+    }
+
+    const fileName = (h?.name || 'resume').replace(/\s+/g, '-').replace(/[^\w\-]/g, '') || 'resume';
+    doc.save(`${fileName}.pdf`);
+  }
+
   let copyButtonJustCopied = false;
 
   async function copyAiPromptToClipboard() {
@@ -375,13 +553,17 @@ ${candidateProfileBlock}
         </span>
       </button>
     </div>
-    <div class="textarea-wrap">
+    <div class="textarea-wrap json-column">
       <textarea
         class="panel"
-        placeholder="Column 2 – row 2"
+        placeholder="Paste resume JSON here (from AI output). Then click Download to generate PDF."
         spellcheck="false"
+        bind:value={jsonInput}
       ></textarea>
-      <button type="button" class="btn-icon" title="Download" aria-label="Download">
+      {#if downloadError}
+        <p class="download-error" role="alert">{downloadError}</p>
+      {/if}
+      <button type="button" class="btn-icon download-btn" title="Download PDF" aria-label="Download PDF" on:click={downloadResumePdf}>
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
           <polyline points="7 10 12 15 17 10"/>
@@ -560,6 +742,30 @@ ${candidateProfileBlock}
     flex: 1;
     min-height: 0;
     display: flex;
+    flex-direction: column;
+  }
+
+  .textarea-wrap.json-column {
+    gap: 0.25rem;
+  }
+
+  .download-error {
+    margin: 0;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.8rem;
+    color: #f87171;
+    background: rgba(248, 113, 113, 0.12);
+    border-radius: 6px;
+    flex-shrink: 0;
+  }
+
+  .json-column .panel {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .json-column .download-btn {
+    position: absolute;
   }
 
   .textarea-wrap .panel {
