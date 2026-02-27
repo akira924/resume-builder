@@ -179,7 +179,7 @@ EXPERIENCE – SENTENCE RULES (VERY IMPORTANT)
 - Each experience must reference company industry relevance.
 - No bullet symbols.
 - No sentence may be vague or generic.
-- No special characters except "/" or "-" when required (examples: CI/CD, T-SQL).
+- Special characters only for technical terms like "/" or "-" (examples: CI/CD, T-SQL).
 - All technologies must be included only after their first version. (or alpha release date)
 SENTENCE COUNT PER COMPANY
 {{SENTENCE_COUNT_PER_COMPANY}}
