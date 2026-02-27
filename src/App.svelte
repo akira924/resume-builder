@@ -164,22 +164,22 @@ JOB TITLE RULES:
 - Simple, Concise, and Common in the industry
 - Job titles should be familiar to the career flow
 SUMMARY
-- 4-5 sentences
+- 3-5 sentences
 - Professional, ATS-optimized, Confident and Concise
 - Aligned directly to the job description
 SKILLS
-- At least 30–40 total skills
+- 30–40 total skills
 - Categorized
 - Must include technologies from the job description
 - Only include technologies released during the work period
 EXPERIENCE – SENTENCE RULES (VERY IMPORTANT)
 - Third-person only without the name, and he or she
-- Each sentence must be 150–220 characters and contain detailed, technically rich descriptions of your role, specific contributions, and technologies used.
+- Each sentence must be 150–250 characters and contain detailed, technically rich descriptions of your role, specific contributions, and technologies used.
 - Each sentence must end with a period.
 - Each experience must reference company industry relevance.
 - No bullet symbols.
 - No sentence may be vague or generic.
-- Special characters only for technical terms like "/" or "-" (examples: CI/CD, T-SQL).
+- Special characters for only technical terms like "/" or "-" (examples: CI/CD, T-SQL).
 - All technologies must be included only after their first version. (or alpha release date)
 SENTENCE COUNT PER COMPANY
 {{SENTENCE_COUNT_PER_COMPANY}}
