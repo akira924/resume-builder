@@ -298,11 +298,16 @@ ${candidateProfileBlock}
     const pageH = 297;
     const contentW = pageW - 2 * margin;
     let y = margin;
-    const lineHeight = 5;
-    const sectionGap = 6;
-    const smallLineHeight = 4;
+    // Resume styles: Helvetica, 11pt body, 22pt full name, 1.5x line spacing
+    const bodyFontSize = 11;
+    const nameFontSize = 22;
+    const lineSpacing = 1.5;
+    const ptToMm = 25.4 / 72;
+    const bodyLineHeight = bodyFontSize * lineSpacing * ptToMm;
+    const nameLineHeight = nameFontSize * lineSpacing * ptToMm;
+    const sectionGap = bodyLineHeight;
 
-    function nextLine(h = lineHeight) {
+    function nextLine(h = bodyLineHeight) {
       y += h;
     }
 
@@ -316,60 +321,61 @@ ${candidateProfileBlock}
     function addWrappedText(text: string, fontSize: number, bold = false) {
       doc.setFontSize(fontSize);
       doc.setFont('helvetica', bold ? 'bold' : 'normal');
+      const lineHeightMm = fontSize * lineSpacing * ptToMm;
       const lines = doc.splitTextToSize(text, contentW);
       for (const line of lines) {
-        checkNewPage(smallLineHeight);
+        checkNewPage(lineHeightMm);
         doc.text(line, margin, y);
-        y += smallLineHeight;
+        y += lineHeightMm;
       }
     }
 
     function addSectionTitle(title: string) {
-      checkNewPage(12);
+      checkNewPage(bodyLineHeight * 1.5);
       y += sectionGap;
-      doc.setFontSize(12);
+      doc.setFontSize(bodyFontSize);
       doc.setFont('helvetica', 'bold');
       doc.text(title, margin, y);
-      nextLine(lineHeight);
+      nextLine();
     }
 
     // Header
     const h = data.header;
     if (h?.name) {
-      doc.setFontSize(18);
+      doc.setFontSize(nameFontSize);
       doc.setFont('helvetica', 'bold');
       doc.text(h.name, margin, y);
-      nextLine(6);
+      y += nameLineHeight;
     }
     if (h?.role) {
-      doc.setFontSize(11);
+      doc.setFontSize(bodyFontSize);
       doc.setFont('helvetica', 'normal');
       doc.text(h.role, margin, y);
-      nextLine(5);
+      nextLine();
     }
     const contactParts = [h?.address, h?.phone, h?.email].filter(Boolean);
     if (contactParts.length) {
-      doc.setFontSize(10);
+      doc.setFontSize(bodyFontSize);
       doc.text(contactParts.join('  |  '), margin, y);
-      nextLine(sectionGap);
+      nextLine();
     }
 
     // Summary
     if (data.summary) {
       addSectionTitle('Summary');
-      addWrappedText(data.summary, 10);
+      addWrappedText(data.summary, bodyFontSize);
     }
 
     // Skills
     if (data.skills?.length) {
       addSectionTitle('Skills');
-      doc.setFontSize(10);
+      doc.setFontSize(bodyFontSize);
       doc.setFont('helvetica', 'normal');
       for (const cat of data.skills) {
         for (const [category, list] of Object.entries(cat)) {
           if (list?.length) {
             const skillText = [category, list.join(', ')].filter(Boolean).join(': ');
-            addWrappedText(skillText, 10);
+            addWrappedText(skillText, bodyFontSize);
           }
         }
       }
@@ -379,27 +385,27 @@ ${candidateProfileBlock}
     if (data.experience?.length) {
       addSectionTitle('Experience');
       for (const exp of data.experience) {
-        checkNewPage(20);
+        checkNewPage(bodyLineHeight * 2);
         const title = [exp.title, exp.company].filter(Boolean).join(', ');
         const meta = [exp.duration, exp.location].filter(Boolean).join(' — ');
         if (title) {
-          doc.setFontSize(11);
+          doc.setFontSize(bodyFontSize);
           doc.setFont('helvetica', 'bold');
           doc.text(title, margin, y);
-          nextLine(4);
+          nextLine();
         }
         if (meta) {
-          doc.setFontSize(9);
+          doc.setFontSize(bodyFontSize);
           doc.setFont('helvetica', 'normal');
           doc.text(meta, margin, y);
-          nextLine(4);
+          nextLine();
         }
         if (exp.sentences?.length) {
-          doc.setFontSize(9);
+          doc.setFontSize(bodyFontSize);
           for (const sent of exp.sentences) {
-            addWrappedText(sent, 9);
+            addWrappedText(sent, bodyFontSize);
           }
-          nextLine(2);
+          nextLine(bodyLineHeight * 0.5);
         }
       }
     }
@@ -407,12 +413,12 @@ ${candidateProfileBlock}
     // Education
     if (data.education?.length) {
       addSectionTitle('Education');
-      doc.setFontSize(10);
+      doc.setFontSize(bodyFontSize);
       doc.setFont('helvetica', 'normal');
       for (const ed of data.education) {
-        checkNewPage(10);
+        checkNewPage(bodyLineHeight);
         const line = [ed.degree, ed.institution, ed.date, ed.location].filter(Boolean).join(', ');
-        if (line) addWrappedText(line, 10);
+        if (line) addWrappedText(line, bodyFontSize);
       }
     }
 
