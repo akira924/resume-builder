@@ -387,7 +387,7 @@ ${candidateProfileBlock}
       doc.setFont('verdana', 'normal');
       nextLine();
     }
-    const contactParts = [h?.address, h?.phone, h?.email].filter(Boolean);
+    const contactParts = [h?.email, h?.phone, h?.address].filter(Boolean);
     if (contactParts.length) {
       doc.setFontSize(bodyFontSize);
       doc.setFont('verdana', 'normal');
@@ -397,13 +397,13 @@ ${candidateProfileBlock}
 
     // Summary
     if (data.summary) {
-      addSectionTitle('PROFESSIONAL SUMMARY');
+      addSectionTitle('SUMMARY');
       addWrappedText(data.summary, bodyFontSize);
     }
 
     // Skills
     if (data.skills?.length) {
-      addSectionTitle('TECHNICAL SKILLS');
+      addSectionTitle('SKILLS');
       doc.setFontSize(bodyFontSize);
       const skillLineHeight = bodyFontSize * lineSpacing * ptToMm;
       for (const cat of data.skills) {
@@ -441,7 +441,7 @@ ${candidateProfileBlock}
 
     // Experience
     if (data.experience?.length) {
-      addSectionTitle('WORK EXPERIENCE');
+      addSectionTitle('EXPERIENCE');
       for (let ei = 0; ei < data.experience.length; ei++) {
         const exp = data.experience[ei];
         checkNewPage(bodyLineHeight * 2);
