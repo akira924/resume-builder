@@ -329,7 +329,7 @@ ${candidateProfileBlock}
     const lineSpacing = 1.5;
     const ptToMm = 25.4 / 72;
     const bodyLineHeight = bodyFontSize * lineSpacing * ptToMm;
-    const naturalGreen: [number, number, number] = [34, 139, 34];
+    const naturalRed: [number, number, number] = [224, 102, 102];
     // offset baseline so the cap-top of the first text lands at the margin edge
     let y = margin + nameFontSize * 0.72 * ptToMm;
     const nameLineHeight = nameFontSize * 1.15 * ptToMm;
@@ -364,9 +364,9 @@ ${candidateProfileBlock}
       y += sectionGap;
       doc.setFontSize(bodyFontSize);
       doc.setFont('verdana', 'bold');
-      doc.setTextColor(...naturalGreen);
+      doc.setTextColor(...naturalRed);
       doc.text(title, margin, y);
-      doc.setTextColor(0, 0, 0);
+      doc.setTextColor(50, 50, 50);
       y += sectionTitleLineHeight;
     }
 
@@ -375,9 +375,9 @@ ${candidateProfileBlock}
     if (h?.name) {
       doc.setFontSize(nameFontSize);
       doc.setFont('verdana', 'bold');
-      doc.setTextColor(...naturalGreen);
+      doc.setTextColor(...naturalRed);
       doc.text(h.name, margin, y);
-      doc.setTextColor(0, 0, 0);
+      doc.setTextColor(50, 50, 50);
       y += nameLineHeight;
     }
     if (h?.role) {
@@ -450,14 +450,14 @@ ${candidateProfileBlock}
           doc.setFontSize(bodyFontSize);
           if (exp.company) {
             doc.setFont('verdana', 'bold');
-            doc.setTextColor(0, 0, 0);
+            doc.setTextColor(50, 50, 50);
             doc.text(exp.company, margin, y);
           }
           if (exp.location) {
             doc.setFont('verdana', 'italic');
             doc.setTextColor(120, 120, 120);
             doc.text(exp.location, margin + contentW, y, { align: 'right' });
-            doc.setTextColor(0, 0, 0);
+            doc.setTextColor(50, 50, 50);
           }
           nextLine();
         }
@@ -466,14 +466,14 @@ ${candidateProfileBlock}
           doc.setFontSize(bodyFontSize);
           if (exp.title) {
             doc.setFont('verdana', 'normal');
-            doc.setTextColor(0, 0, 0);
+            doc.setTextColor(50, 50, 50);
             doc.text(exp.title, margin, y);
           }
           if (exp.duration) {
             doc.setFont('verdana', 'normal');
             doc.setTextColor(120, 120, 120);
             doc.text(exp.duration, margin + contentW, y, { align: 'right' });
-            doc.setTextColor(0, 0, 0);
+            doc.setTextColor(50, 50, 50);
           }
           nextLine();
         }
@@ -515,14 +515,14 @@ ${candidateProfileBlock}
         if (hasRow1) {
           if (ed.degree) {
             doc.setFont('verdana', 'bold');
-            doc.setTextColor(0, 0, 0);
+            doc.setTextColor(50, 50, 50);
             doc.text(ed.degree, margin, y);
           }
           if (ed.date) {
             doc.setFont('verdana', 'normal');
             doc.setTextColor(120, 120, 120);
             doc.text(ed.date, margin + contentW, y, { align: 'right' });
-            doc.setTextColor(0, 0, 0);
+            doc.setTextColor(50, 50, 50);
           }
           y += bodyLineHeight;
         }
@@ -530,14 +530,14 @@ ${candidateProfileBlock}
         if (hasRow2) {
           if (ed.institution) {
             doc.setFont('verdana', 'normal');
-            doc.setTextColor(0, 0, 0);
+            doc.setTextColor(50, 50, 50);
             doc.text(ed.institution, margin, y);
           }
           if (ed.location) {
             doc.setFont('verdana', 'italic');
             doc.setTextColor(120, 120, 120);
             doc.text(ed.location, margin + contentW, y, { align: 'right' });
-            doc.setTextColor(0, 0, 0);
+            doc.setTextColor(50, 50, 50);
           }
           y += bodyLineHeight;
         }
